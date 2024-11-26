@@ -1,0 +1,111 @@
+# lightning.pytorch==2.4.0
+seed_everything: 10
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: [0]
+  num_nodes: 1
+  precision: null
+  logger: true
+  callbacks: null
+  fast_dev_run: false
+  max_epochs: 300
+  min_epochs: 0
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 2
+  log_every_n_steps: 10
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 16
+  gradient_clip_val: 0.01
+  gradient_clip_algorithm: null
+  deterministic: true
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: experiments/SIDD/HINet/
+ckpt_path: null
+model: 
+  class_path: IRLitModule
+  init_args:
+    net: 
+      class_path: HINet
+      init_args:
+        in_chn: 3
+        wf: 64
+        depth: 5
+        relu_slope: 0.2
+        hin_position_left: 0
+        hin_position_right: 4
+    losses:
+      class_path: PSNRLoss
+      init_args:
+        loss_weight: 1
+        reduction: mean
+    optimizer:
+      class_path: AdamW
+      init_args:
+        lr: 2e-4
+        weight_decay: 0.
+        betas: [0.9, 0.999]
+    scheduler:
+      class_path: CosineAnnealingLR
+      init_args:
+        T_max: 400000
+        eta_min: 1e-7
+    lr_scheduler_config:
+      interval: step
+      frequency: 1
+      strict: true
+      name: null
+data: 
+  class_path: IRLitDataModule
+  init_args:
+    train:
+      dataset:
+        flag: 1   # 0: grayscale, 1: color, -1: unchanged
+        lq_dir: C:\Users\yxq\datasets\SIDD\train\lq512.lmdb
+        gt_dir: C:\Users\yxq\datasets\SIDD\train\gt512.lmdb
+        use_flip: true
+        use_rot: true
+      dataloader:
+        batch_size: 4
+        pin_memory: true
+        shuffle: true
+        drop_last: true
+    val:
+      - dataset:
+          flag: 1 
+          lq_dir: C:\Users\yxq\datasets\SIDD\val\lq256.lmdb
+          gt_dir: C:\Users\yxq\datasets\SIDD\val\gt256.lmdb
+        dataloader:
+          batch_size: 1
+    test:
+      dataset:
+        flag: 1
+        lq_dir: C:\Users\yxq\datasets\SIDD\val\lq256.lmdb
+        gt_dir: C:\Users\yxq\datasets\SIDD\val\gt256.lmdb
+      dataloader:
+        batch_size: 1
+    predict:
+      dataset:
+        flag: 1
+        dir: C:\Users\yxq\datasets\SIDD\test
+      dataloader:
+        batch_size: 8
